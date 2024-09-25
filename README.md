@@ -16,19 +16,7 @@ Výber parametrov Juliovej množiny: Pri prechode na Juliovu množinu môžete v
 Inštalácia a použitie
 Požiadavky
 Moderný webový prehliadač (napr. Chrome, Firefox, Edge) s podporou HTML5 a JavaScriptu.
-Kroky na použitie
-Klonovanie repozitára:
-
-bash
-Kopírovať kód
-git clone https://github.com/vas-github-username/mandelbrot-julia-fractal.git
-Navigácia do adresára projektu:
-
-bash
-Kopírovať kód
-cd mandelbrot-julia-fractal
-Otvorte index.html v prehliadači:
-
+Kroky na použitie:
 Dvojklikom na súbor index.html alebo otvorením v prehliadači cez menu File > Open.
 Používanie aplikácie
 Prepínanie medzi fraktálmi:
