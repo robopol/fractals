@@ -28,7 +28,7 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-        #controls button, #controls select, #controls input[type="color"] {
+        #controls button, #controls select, #controls input[type="color"], #controls input[type="range"] {
             margin-top: 5px;
             margin-right: 5px;
         }
@@ -39,6 +39,11 @@
             display: block;
             margin-top: 5px;
         }
+        #iterationDisplay {
+            display: inline-block;
+            width: 50px;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -46,6 +51,7 @@
     <div id="controls">
         <button id="mandelbrotButton">Mandelbrot</button>
         <button id="juliaButton">Julia</button>
+        <button id="saveButton">Uložiť screenshot</button>
         <br>
         <div id="juliaControls" style="display: none;">
             <label for="juliaParameterSelect">Parametre Julia:</label>
@@ -73,6 +79,10 @@
             <input type="color" id="color5" value="#0000ff">
             <input type="color" id="color6" value="#4b0082">
         </div>
+        <br>
+        <label for="maxIterRange">Doostriť obraz:</label>
+        <input type="range" id="maxIterRange" min="100" max="4000" step="100" value="100">
+        <span id="iterationDisplay">100</span> iterácií
         <p>Ovládanie:</p>
         <ul>
             <li>Koliesko myši - Zoom</li>
@@ -115,8 +125,11 @@
             [75, 0, 130]    // Farba 6
         ];
 
-        function colorMap(iteration, maxIter) {
-            let t = iteration / maxIter;
+        let maxIter = 100; // Počiatočný počet iterácií
+        const iterationDisplay = document.getElementById('iterationDisplay');
+        iterationDisplay.textContent = maxIter;
+
+        function colorMap(t) {
             switch (colorScheme) {
                 case 'grayscale':
                     let gray = Math.floor(255 * t);
@@ -151,17 +164,8 @@
         function drawFractal() {
             let data = imageData.data;
 
-            // Výpočet aktuálnej úrovne priblíženia a úprava maxIter
-            let xRangeCurrent = xmax - xmin;
-            let zoomFactor = xRangeInitial / xRangeCurrent;
-
-            // Nastavenie základného počtu iterácií a úprava s priblížením
-            let baseIter = 100;
-            let iterIncrement = 20;
-            let maxIter = baseIter + Math.floor(zoomFactor * iterIncrement);
-
-            // Obmedzenie maxIter kvôli výkonu
-            maxIter = Math.min(maxIter, 2000);
+            // Nastavenie periódy farieb
+            let colorPeriod = 30;
 
             for (let py = 0; py < height; py++) {
                 let y0 = ymin + (py / height) * (ymax - ymin);
@@ -198,7 +202,8 @@
                     if (iteration === maxIter) {
                         color = [0, 0, 0]; // Bod patrí do množiny
                     } else {
-                        color = colorMap(iteration, maxIter);
+                        let t = (iteration % colorPeriod) / colorPeriod;
+                        color = colorMap(t);
                     }
 
                     let index = (py * width + px) * 4;
@@ -230,13 +235,16 @@
             yRangeInitial = ymax - ymin;
         }
 
-        function updateAspectRatio() {
-            let aspectRatio = height / width;
-            let xRange = xmax - xmin;
-            let yCenter = (ymax + ymin) / 2;
-            ymin = yCenter - (xRange * aspectRatio) / 2;
-            ymax = yCenter + (xRange * aspectRatio) / 2;
+        // Funkcia na uloženie screenshotu
+        function saveScreenshot() {
+            const link = document.createElement('a');
+            link.download = 'fractal.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
         }
+
+        // Pridanie udalosti pre tlačidlo na uloženie screenshotu
+        document.getElementById('saveButton').addEventListener('click', saveScreenshot);
 
         resetFractal();
         drawFractal();
@@ -289,6 +297,14 @@
             return [r, g, b];
         }
 
+        // Funkcia na aktualizáciu maxIter z posuvníka
+        const maxIterRange = document.getElementById('maxIterRange');
+        maxIterRange.addEventListener('input', function() {
+            maxIter = parseInt(this.value);
+            iterationDisplay.textContent = maxIter;
+            drawFractal();
+        });
+
         canvas.addEventListener('wheel', function(event) {
             event.preventDefault();
             let zoom = event.deltaY < 0 ? 0.9 : 1.1;
@@ -302,7 +318,12 @@
             xmin = x + (xmin - x) * zoom;
             xmax = x + (xmax - x) * zoom;
 
-            updateAspectRatio();
+            // Aktualizácia pomeru strán
+            let aspectRatio = height / width;
+            let xRange = xmax - xmin;
+            let yCenter = (ymax + ymin) / 2;
+            ymin = yCenter - (xRange * aspectRatio) / 2;
+            ymax = yCenter + (xRange * aspectRatio) / 2;
 
             drawFractal();
         });
@@ -322,14 +343,15 @@
                 let dy = event.clientY - startY;
 
                 let xRange = xmax - xmin;
+                let yRange = ymax - ymin;
 
                 xmin -= dx * xRange / width;
                 xmax -= dx * xRange / width;
+                ymin -= dy * yRange / height;
+                ymax -= dy * yRange / height;
 
                 startX = event.clientX;
                 startY = event.clientY;
-
-                updateAspectRatio();
 
                 drawFractal();
             }
@@ -341,14 +363,6 @@
 
         canvas.addEventListener('mouseleave', function() {
             isDragging = false;
-        });
-
-        window.addEventListener('resize', function() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            imageData = ctx.createImageData(width, height);
-            resetFractal();
-            drawFractal();
         });
 
         // Celá obrazovka na F11
