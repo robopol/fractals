@@ -2,7 +2,7 @@
 <html lang="sk">
 <head>
     <meta charset="UTF-8">
-    <title>Mandelbrot a Julia Fraktál</title>
+    <title>Mandelbrot a iné Fraktály</title>
     <!-- Autor: Ing. Robert Polák -->
     <style>
         body {
@@ -28,7 +28,7 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-        #controls button, #controls select, #controls input[type="color"], #controls input[type="range"] {
+        #controls button, #controls select, #controls input[type="color"], #controls input[type="range"], #controls input[type="number"] {
             margin-top: 5px;
             margin-right: 5px;
         }
@@ -39,7 +39,7 @@
             display: block;
             margin-top: 5px;
         }
-        #iterationDisplay {
+        #iterationDisplay, #depthDisplay {
             display: inline-block;
             width: 50px;
             text-align: right;
@@ -49,8 +49,18 @@
 <body>
     <canvas id="fractalCanvas"></canvas>
     <div id="controls">
-        <button id="mandelbrotButton">Mandelbrot</button>
-        <button id="juliaButton">Julia</button>
+        <label for="fractalSelect">Vyberte fraktál:</label>
+        <select id="fractalSelect">
+            <option value="mandelbrot">Mandelbrot</option>
+            <option value="julia">Julia</option>
+            <option value="burningship">Burning Ship</option>
+            <option value="tricorn">Tricorn</option>
+            <option value="multibrot">Multibrot</option>
+            <option value="sierpinski">Sierpinského trojuholník</option>
+            <option value="koch">Kochova vločka</option>
+            <option value="barnsley">Barnsleyho papraď</option>
+            <option value="tree">Fraktálny strom</option>
+        </select>
         <button id="saveButton">Uložiť screenshot</button>
         <br>
         <div id="juliaControls" style="display: none;">
@@ -61,6 +71,15 @@
                 <option value="2">C = -0.8 + 0.156i</option>
                 <option value="3">C = -0.7 + 0.27015i</option>
             </select>
+        </div>
+        <div id="multibrotControls" style="display: none;">
+            <label for="multibrotPower">Exponent (n):</label>
+            <input type="number" id="multibrotPower" value="3" min="2" max="10" step="1">
+        </div>
+        <div id="depthControls" style="display: none;">
+            <label for="recursionDepthRange">Hĺbka rekurzie:</label>
+            <input type="range" id="recursionDepthRange" min="0" max="12" step="1" value="6">
+            <span id="depthDisplay">6</span>
         </div>
         <label for="colorSchemeSelect">Farebná schéma:</label>
         <select id="colorSchemeSelect">
@@ -81,7 +100,7 @@
         </div>
         <br>
         <label for="maxIterRange">Doostriť obraz:</label>
-        <input type="range" id="maxIterRange" min="100" max="4000" step="100" value="100">
+        <input type="range" id="maxIterRange" min="100" max="10000" step="10" value="100">
         <span id="iterationDisplay">100</span> iterácií
         <p>Ovládanie:</p>
         <ul>
@@ -103,7 +122,7 @@
         let xRangeInitial, yRangeInitial;
 
         let juliaC = { x: 0.355, y: 0.355 };
-        let isJulia = false;
+        let fractalType = 'mandelbrot';
 
         let colorScheme = 'grayscale';
 
@@ -128,6 +147,12 @@
         let maxIter = 100; // Počiatočný počet iterácií
         const iterationDisplay = document.getElementById('iterationDisplay');
         iterationDisplay.textContent = maxIter;
+
+        let multibrotPower = 3; // Počiatočný exponent pre Multibrot
+
+        let recursionDepth = 6; // Počiatočná hĺbka rekurzie
+        const depthDisplay = document.getElementById('depthDisplay');
+        depthDisplay.textContent = recursionDepth;
 
         function colorMap(t) {
             switch (colorScheme) {
@@ -161,7 +186,48 @@
             }
         }
 
+        function complexPower(x, y, n) {
+            let resultReal = 1;
+            let resultImag = 0;
+            let baseReal = x;
+            let baseImag = y;
+            let exponent = n;
+
+            while (exponent > 0) {
+                if (exponent % 2 === 1) {
+                    // result *= base
+                    let tempReal = resultReal * baseReal - resultImag * baseImag;
+                    let tempImag = resultReal * baseImag + resultImag * baseReal;
+                    resultReal = tempReal;
+                    resultImag = tempImag;
+                }
+                // base *= base
+                let tempReal = baseReal * baseReal - baseImag * baseImag;
+                let tempImag = 2 * baseReal * baseImag;
+                baseReal = tempReal;
+                baseImag = tempImag;
+                exponent = Math.floor(exponent / 2);
+            }
+            return { x: resultReal, y: resultImag };
+        }
+
         function drawFractal() {
+            switch (fractalType) {
+                case 'sierpinski':
+                    drawSierpinski();
+                    return;
+                case 'koch':
+                    drawKochSnowflake();
+                    return;
+                case 'barnsley':
+                    drawBarnsleyFern();
+                    return;
+                case 'tree':
+                    drawFractalTree();
+                    return;
+                // Pokračujeme s pôvodným kódom pre ostatné fraktály
+            }
+
             let data = imageData.data;
 
             // Nastavenie periódy farieb
@@ -174,28 +240,45 @@
                     let x, y;
                     let iteration = 0;
 
-                    if (isJulia) {
-                        // Pre Juliovu množinu je Z0 = x0 + y0i, C je konštantné
+                    let xC = x0;
+                    let yC = y0;
+
+                    // Inicializácia podľa typu fraktálu
+                    if (fractalType === 'julia') {
                         x = x0;
                         y = y0;
-                        while (x * x + y * y <= 4 && iteration < maxIter) {
-                            let xTemp = x * x - y * y + juliaC.x;
-                            y = 2 * x * y + juliaC.y;
-                            x = xTemp;
-                            iteration++;
-                        }
+                        xC = juliaC.x;
+                        yC = juliaC.y;
                     } else {
-                        // Pre Mandelbrotovu množinu je Z0 = 0, C = x0 + y0i
                         x = 0;
                         y = 0;
-                        let xC = x0;
-                        let yC = y0;
-                        while (x * x + y * y <= 4 && iteration < maxIter) {
-                            let xTemp = x * x - y * y + xC;
-                            y = 2 * x * y + yC;
-                            x = xTemp;
-                            iteration++;
+                    }
+
+                    while (x * x + y * y <= 4 && iteration < maxIter) {
+                        switch (fractalType) {
+                            case 'mandelbrot':
+                            case 'julia':
+                                let xTemp = x * x - y * y + xC;
+                                y = 2 * x * y + yC;
+                                x = xTemp;
+                                break;
+                            case 'burningship':
+                                let xTempBS = x * x - y * y + xC;
+                                y = 2 * Math.abs(x * y) + yC;
+                                x = Math.abs(xTempBS);
+                                break;
+                            case 'tricorn':
+                                let xTempT = x * x - y * y + xC;
+                                y = -2 * x * y + yC;
+                                x = xTempT;
+                                break;
+                            case 'multibrot':
+                                let powerResult = complexPower(x, y, multibrotPower);
+                                x = powerResult.x + xC;
+                                y = powerResult.y + yC;
+                                break;
                         }
+                        iteration++;
                     }
 
                     let color;
@@ -216,14 +299,179 @@
             ctx.putImageData(imageData, 0, 0);
         }
 
+        function drawFractalTree() {
+            // Vymažeme plátno
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 1;
+            ctx.save();
+            ctx.translate(width / 2, height);
+            drawBranch(recursionDepth, height / 4);
+            ctx.restore();
+        }
+
+        function drawBranch(depth, length) {
+            if (depth === 0) return;
+
+            ctx.lineWidth = depth * 0.5;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -length);
+            ctx.stroke();
+
+            ctx.translate(0, -length);
+
+            ctx.save();
+            ctx.rotate(Math.PI / 6);
+            drawBranch(depth - 1, length * 0.7);
+            ctx.restore();
+
+            ctx.save();
+            ctx.rotate(-Math.PI / 6);
+            drawBranch(depth - 1, length * 0.7);
+            ctx.restore();
+        }
+
+        function drawSierpinski() {
+            // Vymažeme plátno
+            ctx.clearRect(0, 0, width, height);
+
+            // Definujeme vrcholy trojuholníka
+            let vertices = [
+                { x: width / 2, y: 10 },
+                { x: 10, y: height - 10 },
+                { x: width - 10, y: height - 10 }
+            ];
+
+            // Začiatočný bod
+            let point = {
+                x: Math.random() * width,
+                y: Math.random() * height
+            };
+
+            let totalIterations = maxIter * 10;
+            let colorPeriod = totalIterations / 30;
+
+            for (let i = 0; i < totalIterations; i++) {
+                // Náhodne vyberieme vrchol
+                let vertex = vertices[Math.floor(Math.random() * 3)];
+
+                // Nájdeme stred medzi bodom a vrcholom
+                point.x = (point.x + vertex.x) / 2;
+                point.y = (point.y + vertex.y) / 2;
+
+                // Vypočítame farbu na základe iterácie
+                let t = (i % colorPeriod) / colorPeriod;
+                let color = colorMap(t);
+                ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+
+                // Nakreslíme bod
+                ctx.fillRect(point.x, point.y, 1, 1);
+            }
+        }
+
+        function drawKochSnowflake() {
+            // Vymažeme plátno
+            ctx.clearRect(0, 0, width, height);
+
+            let ax = width / 4;
+            let ay = height / 2 + height / 6;
+            let bx = width / 2;
+            let by = height / 2 - height / 3;
+            let cx = width - width / 4;
+            let cy = height / 2 + height / 6;
+
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            drawKochLine(ax, ay, bx, by, recursionDepth);
+            drawKochLine(bx, by, cx, cy, recursionDepth);
+            drawKochLine(cx, cy, ax, ay, recursionDepth);
+            ctx.stroke();
+        }
+
+        function drawKochLine(x1, y1, x2, y2, depth) {
+            if (depth === 0) {
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+            } else {
+                let dx = (x2 - x1) / 3;
+                let dy = (y2 - y1) / 3;
+
+                let x3 = x1 + dx;
+                let y3 = y1 + dy;
+
+                let x5 = x1 + 2 * dx;
+                let y5 = y1 + 2 * dy;
+
+                let angle = Math.atan2(y2 - y1, x2 - x1) - Math.PI / 3;
+                let length = Math.hypot(dx, dy);
+
+                let x4 = x3 + Math.cos(angle) * length;
+                let y4 = y3 + Math.sin(angle) * length;
+
+                drawKochLine(x1, y1, x3, y3, depth - 1);
+                drawKochLine(x3, y3, x4, y4, depth - 1);
+                drawKochLine(x4, y4, x5, y5, depth - 1);
+                drawKochLine(x5, y5, x2, y2, depth - 1);
+            }
+        }
+
+        function drawBarnsleyFern() {
+            // Vymažeme plátno
+            ctx.clearRect(0, 0, width, height);
+
+            let x = 0;
+            let y = 0;
+
+            for (let i = 0; i < maxIter * 20; i++) {
+                let r = Math.random();
+                let xNew, yNew;
+
+                if (r < 0.01) {
+                    xNew = 0;
+                    yNew = 0.16 * y;
+                } else if (r < 0.86) {
+                    xNew = 0.85 * x + 0.04 * y;
+                    yNew = -0.04 * x + 0.85 * y + 1.6;
+                } else if (r < 0.93) {
+                    xNew = 0.2 * x - 0.26 * y;
+                    yNew = 0.23 * x + 0.22 * y + 1.6;
+                } else {
+                    xNew = -0.15 * x + 0.28 * y;
+                    yNew = 0.26 * x + 0.24 * y + 0.44;
+                }
+
+                x = xNew;
+                y = yNew;
+
+                // Prevod súradníc na plátno
+                let px = width / 2 + x * width / 11;
+                let py = height - y * height / 11;
+
+                // Vypočítame farbu na základe iterácie
+                let t = i / (maxIter * 20);
+                let color = colorMap(t);
+                ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+
+                ctx.fillRect(px, py, 1, 1);
+            }
+        }
+
         function resetFractal() {
             let aspectRatio = height / width;
-            if (isJulia) {
-                xmin = -2;
-                xmax = 2;
-            } else {
-                xmin = -2.5;
-                xmax = 1;
+            switch (fractalType) {
+                case 'julia':
+                case 'burningship':
+                case 'tricorn':
+                case 'multibrot':
+                    xmin = -2;
+                    xmax = 2;
+                    break;
+                default:
+                    xmin = -2.5;
+                    xmax = 1;
             }
             let xRange = xmax - xmin;
             let yCenter = 0;
@@ -249,18 +497,20 @@
         resetFractal();
         drawFractal();
 
-        document.getElementById('mandelbrotButton').addEventListener('click', function() {
-            isJulia = false;
-            document.getElementById('juliaControls').style.display = 'none';
-            resetFractal();
+        // Aktualizácia hĺbky rekurzie z posuvníka
+        const recursionDepthRange = document.getElementById('recursionDepthRange');
+        recursionDepthRange.addEventListener('input', function() {
+            recursionDepth = parseInt(this.value);
+            depthDisplay.textContent = recursionDepth;
             drawFractal();
         });
 
-        document.getElementById('juliaButton').addEventListener('click', function() {
-            isJulia = true;
-            document.getElementById('juliaControls').style.display = 'block';
-            juliaC = juliaSetValues[0]; // Nastavenie počiatočnej hodnoty C
-            document.getElementById('juliaParameterSelect').value = '0';
+        // Zmena fraktálu
+        document.getElementById('fractalSelect').addEventListener('change', function() {
+            fractalType = this.value;
+            document.getElementById('juliaControls').style.display = fractalType === 'julia' ? 'block' : 'none';
+            document.getElementById('multibrotControls').style.display = fractalType === 'multibrot' ? 'block' : 'none';
+            document.getElementById('depthControls').style.display = ['koch', 'tree'].includes(fractalType) ? 'block' : 'none';
             resetFractal();
             drawFractal();
         });
@@ -268,6 +518,11 @@
         document.getElementById('juliaParameterSelect').addEventListener('change', function() {
             let index = parseInt(this.value);
             juliaC = juliaSetValues[index];
+            drawFractal();
+        });
+
+        document.getElementById('multibrotPower').addEventListener('input', function() {
+            multibrotPower = parseInt(this.value);
             drawFractal();
         });
 
@@ -307,10 +562,14 @@
 
         canvas.addEventListener('wheel', function(event) {
             event.preventDefault();
+
+            if (['sierpinski', 'koch', 'barnsley', 'tree'].includes(fractalType)) return;
+
             let zoom = event.deltaY < 0 ? 0.9 : 1.1;
 
-            let mouseX = event.clientX;
-            let mouseY = event.clientY;
+            let rect = canvas.getBoundingClientRect();
+            let mouseX = event.clientX - rect.left;
+            let mouseY = event.clientY - rect.top;
 
             let x = xmin + (mouseX / width) * (xmax - xmin);
             let y = ymin + (mouseY / height) * (ymax - ymin);
@@ -321,7 +580,7 @@
             // Aktualizácia pomeru strán
             let aspectRatio = height / width;
             let xRange = xmax - xmin;
-            let yCenter = (ymax + ymin) / 2;
+            let yCenter = y;
             ymin = yCenter - (xRange * aspectRatio) / 2;
             ymax = yCenter + (xRange * aspectRatio) / 2;
 
@@ -332,6 +591,8 @@
         let startX, startY;
 
         canvas.addEventListener('mousedown', function(event) {
+            if (['sierpinski', 'koch', 'barnsley', 'tree'].includes(fractalType)) return;
+
             isDragging = true;
             startX = event.clientX;
             startY = event.clientY;
@@ -377,6 +638,15 @@
                     }
                 }
             }
+        });
+
+        // Aktualizácia rozlíšenia plátna pri zmene veľkosti okna
+        window.addEventListener('resize', function() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            imageData = ctx.createImageData(width, height);
+            resetFractal();
+            drawFractal();
         });
     </script>
 </body>
