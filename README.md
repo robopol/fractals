@@ -1,29 +1,24 @@
-Mandelbrot a Julia Fraktál
-
-Popis projektu
-Tento projekt predstavuje webovú aplikáciu na vizualizáciu Mandelbrotovej a Juliovej množiny pomocou HTML5 a JavaScriptu. Umožňuje interaktívne priblíženie a posúvanie fraktálov, výber rôznych farebných schém vrátane vlastných farieb a prepínanie medzi rôznymi parametrami pre Juliovu množinu. Aplikácia je optimalizovaná pre plynulé vykresľovanie a zachovanie detailov pri neustálom priblížení.
+Fraktálny Prieskumník
+Fraktálny Prieskumník je webová aplikácia umožňujúca interaktívne skúmanie rôznych fraktálov, vrátane Mandelbrotovej množiny, Juliovej množiny, Sierpinského trojuholníka, Kochovej vločky, Barnsleyho papraďa a fraktálneho stromu. Aplikácia poskytuje množstvo ovládacích prvkov na prispôsobenie parametrov fraktálov, ako sú hlboké iterácie, farbové schémy a hĺbka rekurzie.
 
 Funkcie
-Prepínanie medzi Mandelbrotovou a Juliovou množinou: Jednoducho kliknite na tlačidlá "Mandelbrot" alebo "Julia" pre zobrazenie príslušného fraktálu.
-Interaktívne ovládanie:
-Zoomovanie: Použite koliesko myši na priblíženie alebo oddialenie fraktálu.
-Posúvanie: Kliknite a ťahajte myšou pre posun v rámci fraktálu.
-Výber farebnej schémy: Vyberte si z preddefinovaných farebných schém alebo vytvorte vlastnú s až šiestimi farbami.
-Vlastné farby: Pri výbere "Vlastná" farebnej schémy môžete nastaviť až šesť farieb podľa vašich preferencií.
-Fullscreen režim: Stlačením klávesy F11 prepnite do režimu celej obrazovky bez deformácie fraktálu.
-Automatické zvýšenie detailov: Počas priblíženia sa automaticky zvyšuje počet iterácií, čo zabezpečuje ostrosť a detaily fraktálu.
-Výber parametrov Juliovej množiny: Pri prechode na Juliovu množinu môžete vybrať z preddefinovaných hodnôt pre parameter C.
-Inštalácia a použitie
-Požiadavky
-Moderný webový prehliadač (napr. Chrome, Firefox, Edge) s podporou HTML5 a JavaScriptu.
-Kroky na použitie:
-Dvojklikom na súbor index.html alebo otvorením v prehliadači cez menu File > Open.
-Používanie aplikácie
-Prepínanie medzi fraktálmi:
+Mandelbrotova množina: Preskúmajte klasický Mandelbrotov fraktál s možnosťou priblíženia a nastavenia počtu iterácií.
 
-Kliknite na tlačidlá "Mandelbrot" alebo "Julia" v ľavom hornom rohu pre zobrazenie príslušného fraktálu.
-Pri výbere "Julia" sa zobrazí rozbaľovací zoznam s preddefinovanými parametrami C. Vyberte požadovanú hodnotu pre C a fraktál sa automaticky prekreslí.
-Výber farebnej schémy:
+Juliova množina: Vyberte si z preddefinovaných komplexných parametrov a vizualizujte rôzne Juliove množiny.
+
+Sierpinského trojuholník: Generujte Sierpinského trojuholník pomocou metódy Chaos Game s možnosťou prispôsobenia farieb.
+
+Kochova vločka: Vytvorte Kochovu vločku s nastaviteľnou hĺbkou rekurzie pre rôznu úroveň detailov.
+
+Barnsleyho papraď: Vizualizujte Barnsleyho papraď pomocou iterovaného funkčného systému (IFS) s interaktívnym prispôsobením farieb.
+
+Fraktálny strom: Generujte fraktálne stromy s nastaviteľnou hĺbkou rekurzie na úpravu zložitosti vetiev.
+
+Farebné schémy: Vyberte si z prednastavených farebných schém (stupne šedej, dúha, modrá, oheň) alebo si vytvorte vlastnú vlastnou schému s výberom 6 farieb.
+
+Responzívny dizajn: Aplikácia sa prispôsobuje rôznym veľkostiam obrazoviek a podporuje režim celej obrazovky.
+
+Uloženie screenshotu: Uložte aktuálny pohľad na fraktál ako PNG súbor.
 
 Použite rozbaľovací zoznam "Farebná schéma" na výber preddefinovanej palety farieb:
 Stupne šedej
