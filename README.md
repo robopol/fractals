@@ -1,67 +1,67 @@
-# Fraktálny Prieskumník
+# Fractal Explorer
 
-Fraktálny Prieskumník je webová aplikácia umožňujúca interaktívne skúmanie rôznych fraktálov, vrátane Mandelbrotovej množiny, Juliovej množiny, Sierpinského trojuholníka, Kochovej vločky, Barnsleyho papraďa a fraktálneho stromu. Aplikácia poskytuje množstvo ovládacích prvkov na prispôsobenie parametrov fraktálov, ako sú hlboké iterácie, farbové schémy a hĺbka rekurzie.
+Fractal Explorer is a web application that allows interactive exploration of various fractals, including the Mandelbrot set, Julia set, Sierpiński triangle, Koch snowflake, Barnsley's fern, and fractal tree. The application provides a variety of controls to adjust fractal parameters, such as deep iterations, color schemes, and recursion depth.
 
-## Funkcie
+## Features
 
-- **Mandelbrotova množina:**  
-  Preskúmajte klasický Mandelbrotov fraktál s možnosťou priblíženia a nastavenia počtu iterácií.
+- **Mandelbrot Set:**  
+  Explore the classic Mandelbrot fractal with the ability to zoom in and set the number of iterations.
 
-- **Juliova množina:**  
-  Vyberte si z preddefinovaných komplexných parametrov a vizualizujte rôzne Juliove množiny.
+- **Julia Set:**  
+  Choose from predefined complex parameters and visualize different Julia sets.
 
-- **Sierpinského trojuholník:**  
-  Generujte Sierpinského trojuholník pomocou metódy Chaos Game s možnosťou prispôsobenia farieb.
+- **Sierpiński Triangle:**  
+  Generate the Sierpiński triangle using the Chaos Game method with customizable colors.
 
-- **Kochova vločka:**  
-  Vytvorte Kochovu vločku s nastaviteľnou hĺbkou rekurzie pre rôznu úroveň detailov.
+- **Koch Snowflake:**  
+  Create a Koch snowflake with adjustable recursion depth for varying levels of detail.
 
-- **Barnsleyho papraď:**  
-  Vizualizujte Barnsleyho papraď pomocou iterovaného funkčného systému (IFS) s interaktívnym prispôsobením farieb.
+- **Barnsley's Fern:**  
+  Visualize Barnsley's fern using an Iterated Function System (IFS) with interactive color customization.
 
-- **Fraktálny strom:**  
-  Generujte fraktálne stromy s nastaviteľnou hĺbkou rekurzie na úpravu zložitosti vetiev.
+- **Fractal Tree:**  
+  Generate fractal trees with adjustable recursion depth to modify branch complexity.
 
-- **Farebné schémy:**  
-  Vyberte si z prednastavených farebných schém (stupne šedej, dúha, modrá, oheň) alebo si vytvorte vlastnú schému s výberom až 6 farieb.
+- **Color Schemes:**  
+  Choose from preset color schemes (grayscale, rainbow, blue, fire) or create your own scheme by selecting up to 6 colors.
 
-- **Responzívny dizajn:**  
-  Aplikácia sa prispôsobuje rôznym veľkostiam obrazoviek a podporuje režim celej obrazovky.
+- **Responsive Design:**  
+  The application adapts to various screen sizes and supports fullscreen mode.
 
-- **Uloženie screenshotu:**  
-  Uložte aktuálny pohľad na fraktál ako PNG súbor.
+- **Save Screenshot:**  
+  Save the current view of the fractal as a PNG file.
 
-### Použitie rozbaľovacieho zoznamu "Farebná schéma"
+### Using the "Color Scheme" Dropdown
 
-- **Stupne šedej**
-- **Dúha**
-- **Modrá**
-- **Oheň**
-- **Vlastná**
+- **Grayscale**
+- **Rainbow**
+- **Blue**
+- **Fire**
+- **Custom**
 
-Pri výbere **"Vlastná"** sa zobrazia farebné vstupy pre nastavenie až šiestich farieb. Vyberte si farby podľa vašich preferencií a fraktál sa okamžite aktualizuje.
+When **"Custom"** is selected, color inputs appear for setting up to six colors. Choose colors according to your preference and the fractal will update immediately.
 
-### Interaktívne ovládanie
+### Interactive Controls
 
-- **Zoomovanie:**  
-  Použite koliesko myši na priblíženie alebo oddialenie fraktálu. Počas zoomovania sa automaticky zvyšuje počet iterácií pre zachovanie detailov.
+- **Zooming:**  
+  Use the mouse wheel to zoom in or out of the fractal. During zooming, the number of iterations automatically increases to maintain detail.
 
-- **Posúvanie:**  
-  Kliknite a ťahajte myšou na posun po fraktáli.
+- **Panning:**  
+  Click and drag the mouse to move around the fractal.
 
-### Fullscreen režim
+### Fullscreen Mode
 
-- **Režim celej obrazovky:**  
-  Stlačte F11 pre prepnutie do režimu celej obrazovky. Opätovné stlačenie F11 režim zruší.
+- **Fullscreen Mode:**  
+  Press F11 to toggle fullscreen mode. Pressing F11 again will exit fullscreen mode.
 
-## Prispievanie
+## Contributing
 
-Vitajte prispievač! Ak máte nápady na zlepšenie alebo nájdete chybu, neváhajte vytvoriť issue alebo poslať pull request.
+Contributors are welcome! If you have ideas for improvements or find a bug, feel free to create an issue or send a pull request.
 
-## Licencia
+## License
 
-Tento projekt je licencovaný pod MIT License.
+This project is licensed under the MIT License.
 
-## Autor
+## Author
 
 **Ing. Robert Polák**
