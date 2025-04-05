@@ -2,155 +2,579 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mandelbrot and Other Fractals (CPU) + Random Palette</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Fractals - Computer Graphics | Ing. Robert Polak</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/5.5.0/collection/components/icon/svg/aperture-outline.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/5.5.0/collection/components/icon/svg/aperture-outline.svg">
+    
+    <!-- SEO Meta tags -->
+    <meta name="description" content="Interactive web application for exploring and creating various types of fractals including Mandelbrot, Julia, Koch, Sierpinski and others. Created using HTML5, CSS3 and JavaScript.">
+    <meta name="keywords" content="fractal, mandelbrot, julia, koch, sierpinski, barnsley, computer graphics, mathematics, interactive graphics, procedural generation">
+    <meta name="author" content="Ing. Robert Polak">
+    
+    <!-- Open Graph meta tags for social media -->
+    <meta property="og:title" content="Interactive Fractals - Computer Graphics">
+    <meta property="og:description" content="Discover the beauty of mathematical fractals with this interactive visualization. Explore different types of fractals including Mandelbrot, Julia, Koch and many others.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://poling.sk/fractals/images/fractal-preview.png">
+    <meta property="og:url" content="https://poling.sk/fractals/fractal.html">
+    
+    <!-- Additional meta information -->
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="revisit-after" content="7 days">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --accent-color: #fd79a8;
+            --dark-bg: #12121f;
+            --panel-bg: rgba(25, 25, 40, 0.85);
+            --text-color: #f8f9fa;
+            --border-radius: 12px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             overflow: hidden;
-            background-color: black;
+            background-color: var(--dark-bg);
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
         }
+
         #fractalCanvas {
             display: block;
             width: 100vw;
             height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
         }
+
         #controls {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            font-family: sans-serif;
-            font-size: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            max-height: 90vh;
+            top: 20px;
+            left: 20px;
+            width: 320px;
+            max-width: 90vw;
+            color: var(--text-color);
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            max-height: calc(100vh - 40px);
             overflow-y: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            z-index: 10;
+            transition: all 0.3s ease;
         }
-        #controls button, 
-        #controls select, 
-        #controls input[type="color"], 
-        #controls input[type="range"], 
-        #controls input[type="number"] {
-            margin-top: 5px;
-            margin-right: 5px;
+
+        @media (max-width: 768px) {
+            #controls {
+                width: calc(100% - 40px);
+                max-height: 60vh;
+            }
         }
-        #controls label {
-            margin-right: 5px;
+
+        .control-group {
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
         }
-        #customColors label {
-            display: block;
-            margin-top: 5px;
+
+        .control-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
         }
-        #iterationDisplay,
-        #depthDisplay {
+
+        h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            font-weight: 500;
+            color: var(--accent-color);
+        }
+
+        select, input[type="color"], input[type="range"], input[type="number"], button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f8f9fa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+            padding-right: 30px;
+        }
+
+        select option {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+        }
+
+        input[type="range"] {
+            appearance: none;
+            -webkit-appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: none;
+        }
+
+        input[type="number"] {
+            width: 48%;
             display: inline-block;
-            width: 50px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            padding: 12px;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        #iterationDisplay, #depthDisplay {
+            display: inline-block;
+            min-width: 50px;
             text-align: right;
+            font-size: 14px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+
+        .color-pickers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        input[type="color"] {
+            width: calc(33.33% - 6px);
+            height: 40px;
+            padding: 2px;
+            cursor: pointer;
+        }
+
+        #randomizeColorsBtn {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .controls-value {
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        ul.controls-info {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        ul.controls-info li {
+            font-size: 14px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+        }
+
+        ul.controls-info li::before {
+            content: "•";
+            color: var(--accent-color);
+            font-weight: bold;
+            display: inline-block;
+            width: 15px;
+            margin-right: 5px;
+        }
+
+        #infoLink {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        #infoLink a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        #infoLink a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+        #saveButton {
+            background: var(--accent-color);
+            margin-top: 10px;
+            display: block;
+            width: 100%;
+        }
+
+        #saveButton:hover {
+            background: #e84393;
+        }
+
+        #resetViewBtn {
+            background: rgba(255, 255, 255, 0.2);
+            margin-top: 10px;
+        }
+
+        #resetViewBtn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsiveness for small displays */
+        @media (max-width: 576px) {
+            #controls {
+                left: 10px;
+                right: 10px;
+                top: auto;
+                bottom: 10px;
+                width: auto;
+                max-height: 50vh;
+                opacity: 0.95;
+                font-size: 0.9em;
+                padding: 15px;
+            }
+            
+            h2 {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+            
+            input[type="number"] {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+            
+            .control-group {
+                margin-bottom: 10px;
+                padding-bottom: 8px;
+            }
+
+            /* Better touch areas for mobile controls */
+            select, button, input[type="range"] {
+                height: 38px;
+                margin-bottom: 10px;
+            }
+
+            input[type="range"]::-webkit-slider-thumb {
+                width: 24px;
+                height: 24px;
+            }
+
+            input[type="range"]::-moz-range-thumb {
+                width: 24px;
+                height: 24px;
+            }
+
+            /* Panel toggle control */
+            #toggleControlsBtn {
+                display: block;
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 100;
+                width: 44px;
+                height: 44px;
+                background: var(--panel-bg);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: var(--shadow);
+            }
+            
+            /* Collapsible sections for mobile */
+            .mobile-section-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+            }
+            
+            .mobile-section-content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+            
+            .mobile-section-expanded .mobile-section-content {
+                max-height: 500px; /* Arbitrary large value */
+            }
+            
+            .mobile-toggle-icon {
+                transition: transform 0.3s ease;
+            }
+            
+            .mobile-section-expanded .mobile-toggle-icon {
+                transform: rotate(180deg);
+            }
+        }
+
+        /* Panel toggle button for mobile */
+        #toggleControlsBtn {
+            display: none;
         }
     </style>
 </head>
 <body>
 <canvas id="fractalCanvas"></canvas>
 
-<div id="controls">
-    <label for="fractalSelect">Select Fractal:</label>
-    <select id="fractalSelect">
-        <option value="mandelbrot">Mandelbrot</option>
-        <option value="julia">Julia</option>
-        <option value="burningship">Burning Ship</option>
-        <option value="tricorn">Tricorn</option>
-        <option value="multibrot">Multibrot</option>
-        <option value="sierpinski">Sierpinski Triangle</option>
-        <option value="koch">Koch Snowflake</option>
-        <option value="barnsley">Barnsley Fern</option>
-        <option value="tree">Fractal Tree</option>
-        <option value="mandelbulb">Mandelbulb (3D)</option>
-    </select>
-    <button id="saveButton">Save Screenshot</button>
-    <br>
+<!-- Toggle button for control panel on mobile devices -->
+<div id="toggleControlsBtn">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="12" x2="20" y2="12"></line>
+        <line x1="4" y1="6" x2="20" y2="6"></line>
+        <line x1="4" y1="18" x2="20" y2="18"></line>
+    </svg>
+</div>
 
-    <!-- JULIA CONTROLS (Predefined or custom) -->
-    <div id="juliaControls" style="display: none; margin-top: 10px;">
-        <label for="juliaParameterSelect">Julia Parameters:</label>
-        <select id="juliaParameterSelect">
-            <option value="0">C = 0.355 + 0.355i</option>
-            <option value="1">C = 0.285 + 0.01i</option>
-            <option value="2">C = -0.8 + 0.156i</option>
-            <option value="3">C = -0.7 + 0.27015i</option>
-            <option value="custom">Custom</option>
-        </select>
-        <div id="customJulia" style="display: none; margin-top: 5px;">
-            <label>Real part:</label>
-            <input type="number" id="juliaReal" value="0.355" step="0.001">
-            <label>Imag part:</label>
-            <input type="number" id="juliaImag" value="0.355" step="0.001">
-            <button id="applyCustomJulia">Apply</button>
+<div id="controls">
+    <div class="control-group mobile-section">
+        <div class="mobile-section-header">
+            <h2>Fractal Settings</h2>
+            <span class="mobile-toggle-icon">▼</span>
+        </div>
+        <div class="mobile-section-content">
+            <label for="fractalSelect">Fractal Type:</label>
+            <select id="fractalSelect">
+                <option value="mandelbrot">Mandelbrot</option>
+                <option value="julia">Julia</option>
+                <option value="burningship">Burning Ship</option>
+                <option value="tricorn">Tricorn</option>
+                <option value="multibrot">Multibrot</option>
+                <option value="sierpinski">Sierpinski Triangle</option>
+                <option value="koch">Koch Snowflake</option>
+                <option value="barnsley">Barnsley Fern</option>
+                <option value="tree">Fractal Tree</option>
+                <option value="mandelbulb">Mandelbulb (3D)</option>
+            </select>
+            
+            <button id="resetViewBtn">Reset View</button>
+            <button id="saveButton">Save Screenshot</button>
+        </div>
+    </div>
+
+    <!-- JULIA CONTROLS -->
+    <div id="juliaControls" class="control-group mobile-section" style="display: none;">
+        <div class="mobile-section-header">
+            <h2>Julia Settings</h2>
+            <span class="mobile-toggle-icon">▼</span>
+        </div>
+        <div class="mobile-section-content">
+            <label for="juliaParameterSelect">Preset Parameters:</label>
+            <select id="juliaParameterSelect">
+                <option value="0">C = 0.355 + 0.355i</option>
+                <option value="1">C = 0.285 + 0.01i</option>
+                <option value="2">C = -0.8 + 0.156i</option>
+                <option value="3">C = -0.7 + 0.27015i</option>
+                <option value="custom">Custom</option>
+            </select>
+            
+            <div id="customJulia" style="display: none; margin-top: 10px;">
+                <div class="controls-row">
+                    <label for="juliaReal">Real part:</label>
+                    <input type="number" id="juliaReal" value="0.355" step="0.001">
+                </div>
+                <div class="controls-row">
+                    <label for="juliaImag">Imaginary part:</label>
+                    <input type="number" id="juliaImag" value="0.355" step="0.001">
+                </div>
+                <button id="applyCustomJulia">Apply</button>
+            </div>
         </div>
     </div>
 
     <!-- MULTIBROT CONTROLS -->
-    <div id="multibrotControls" style="display: none; margin-top: 10px;">
-        <label for="multibrotPower">Multibrot exponent (n):</label>
-        <input type="number" id="multibrotPower" value="3" min="2" max="10" step="1">
+    <div id="multibrotControls" class="control-group mobile-section" style="display: none;">
+        <div class="mobile-section-header">
+            <h2>Multibrot Settings</h2>
+            <span class="mobile-toggle-icon">▼</span>
+        </div>
+        <div class="mobile-section-content">
+            <label for="multibrotPower">Exponent (n):</label>
+            <input type="number" id="multibrotPower" value="3" min="2" max="10" step="1">
+        </div>
     </div>
 
-    <!-- RECURSION DEPTH (for Koch, Tree, etc.) -->
-    <div id="depthControls" style="display: none; margin-top: 10px;">
-        <label for="recursionDepthRange">Recursion Depth:</label>
-        <input type="range" id="recursionDepthRange" min="0" max="12" step="1" value="6">
-        <span id="depthDisplay">6</span>
+    <!-- RECURSION DEPTH -->
+    <div id="depthControls" class="control-group mobile-section" style="display: none;">
+        <div class="mobile-section-header">
+            <h2>Recursion Settings</h2>
+            <span class="mobile-toggle-icon">▼</span>
+        </div>
+        <div class="mobile-section-content">
+            <div class="controls-row">
+                <label for="recursionDepthRange">Recursion Depth:</label>
+                <span id="depthDisplay">6</span>
+            </div>
+            <input type="range" id="recursionDepthRange" min="0" max="12" step="1" value="6">
+        </div>
     </div>
 
     <!-- COLOR SCHEME -->
-    <label for="colorSchemeSelect" style="margin-top:10px;">Color Scheme:</label>
-    <select id="colorSchemeSelect">
-        <option value="grayscale">Grayscale</option>
-        <option value="rainbow">Rainbow</option>
-        <option value="blue">Blue</option>
-        <option value="fire">Fire</option>
-        <option value="custom">Custom (6 colors)</option>
-    </select>
+    <div class="control-group mobile-section">
+        <div class="mobile-section-header">
+            <h2>Color Settings</h2>
+            <span class="mobile-toggle-icon">▼</span>
+        </div>
+        <div class="mobile-section-content">
+            <label for="colorSchemeSelect">Color Scheme:</label>
+            <select id="colorSchemeSelect">
+                <option value="grayscale">Grayscale</option>
+                <option value="rainbow">Rainbow</option>
+                <option value="blue" selected>Blue</option>
+                <option value="fire">Fire</option>
+                <option value="custom">Custom (6 colors)</option>
+            </select>
 
-    <div id="customColors" style="display: none;">
-        <label>Select 6 colors for the custom scheme:</label>
-        <input type="color" id="color1" value="#ff0000">
-        <input type="color" id="color2" value="#ffa500">
-        <input type="color" id="color3" value="#ffff00">
-        <input type="color" id="color4" value="#008000">
-        <input type="color" id="color5" value="#0000ff">
-        <input type="color" id="color6" value="#4b0082">
-        <!-- New button for random palette -->
-        <button id="randomizeColorsBtn">Randomize Palette</button>
+            <div id="customColors" style="display: none; margin-top: 10px;">
+                <label>Custom Color Palette:</label>
+                <div class="color-pickers">
+                    <input type="color" id="color1" value="#ff0000">
+                    <input type="color" id="color2" value="#ffa500">
+                    <input type="color" id="color3" value="#ffff00">
+                    <input type="color" id="color4" value="#008000">
+                    <input type="color" id="color5" value="#0000ff">
+                    <input type="color" id="color6" value="#4b0082">
+                </div>
+                <button id="randomizeColorsBtn">Randomize Palette</button>
+            </div>
+
+            <div class="controls-row" style="margin-top: 10px;">
+                <label for="maxIterRange">Max Iterations:</label>
+                <span id="iterationDisplay" class="controls-value">200</span>
+            </div>
+            <input type="range" id="maxIterRange" min="100" max="2000" step="50" value="200">
+        </div>
     </div>
-    <br>
 
-    <!-- MAX ITER -->
-    <label for="maxIterRange" style="margin-top:10px;">Sharpness / Max Iterations:</label>
-    <input type="range" id="maxIterRange" min="100" max="2000" step="50" value="200">
-    <span id="iterationDisplay">200</span> iterations
-
-    <p style="margin-top:10px;">Controls:</p>
-    <ul>
-        <li>Mouse Wheel - Zoom</li>
-        <li>Click + Drag - Move</li>
-        <li>F11 - Fullscreen</li>
-    </ul>
-    <!-- Pridaný odkaz -->
-    <div id="infoLink">
-        <a href="mandelbrot_gpu.html" target="_blank" rel="noopener noreferrer">
-        Fast rendering using GPU Mandelbrot fractal
-        </a>
+    <!-- CONTROLS INFO -->
+    <div class="control-group mobile-section">
+        <div class="mobile-section-header">
+            <h2>Controls</h2>
+            <span class="mobile-toggle-icon">▼</span>
+        </div>
+        <div class="mobile-section-content">
+            <ul class="controls-info">
+                <li>Mouse Wheel - Zoom in/out</li>
+                <li>Click + Drag - Move around</li>
+                <li>F11 - Toggle fullscreen</li>
+            </ul>
+            
+            <div id="infoLink">
+                <a href="mandelbrot_gpu.html" target="_blank" rel="noopener noreferrer">
+                    GPU Accelerated Version
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
+    // DOM references
     const canvas = document.getElementById('fractalCanvas');
     const ctx = canvas.getContext('2d');
-
+    const controlsPanel = document.getElementById('controls');
+    const toggleControlsBtn = document.getElementById('toggleControlsBtn');
+    
+    // Variables initialization
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
     let imageData = ctx.createImageData(width, height);
+
+    // Maximum iterations
+    let maxIter = 200; 
+    const iterationDisplay = document.getElementById('iterationDisplay');
+    iterationDisplay.textContent = maxIter;
+
+    // Recursion depth (for fractal tree, Koch, etc.)
+    let recursionDepth = 6;
+    const depthDisplay = document.getElementById('depthDisplay');
+    depthDisplay.textContent = recursionDepth;
+    
+    // Variables for progressive rendering
+    let isRenderingInProgress = false;
+    let isUserInteracting = false;
+    let renderingTimeoutId = null;
+    let lastRenderTime = 0;
+    const progressiveScale = [8, 4, 2, 1]; // Progressive rendering scaling
+    let currentRenderQuality = 0; // Index in progressiveScale
+    let lowQualityMode = false; // Quality flag during movement/zooming
 
     let xmin, xmax, ymin, ymax;
     let xRangeInitial, yRangeInitial;
@@ -160,7 +584,7 @@
     let fractalType = 'mandelbrot';
 
     // Color scheme
-    let colorScheme = 'grayscale';
+    let colorScheme = 'blue';
 
     // Predefined values for Julia Set
     const juliaSetValues = [
@@ -180,21 +604,11 @@
         [75, 0, 130]
     ];
 
-    // Max iterations
-    let maxIter = 200; 
-    const iterationDisplay = document.getElementById('iterationDisplay');
-    iterationDisplay.textContent = maxIter;
-
     // Multibrot power
     let multibrotPower = 3;
 
-    // Recursion depth (for fractal tree, Koch, etc.)
-    let recursionDepth = 6;
-    const depthDisplay = document.getElementById('depthDisplay');
-    depthDisplay.textContent = recursionDepth;
-
     // Mandelbulb exponent
-    let mandelbulbPower = 8; 
+    let mandelbulbPower = 8;
 
     //-----------------------------------------------------------------
     // colorMap
@@ -266,9 +680,50 @@
     }
 
     //-----------------------------------------------------------------
-    // drawFractal() - main
+    // NEW FUNCTION: Progressive fractal rendering
     //-----------------------------------------------------------------
-    function drawFractal() {
+    function progressivelyDrawFractal() {
+        if (isRenderingInProgress) {
+            // End current rendering to start a new one
+            isRenderingInProgress = false;
+            if (renderingTimeoutId) {
+                clearTimeout(renderingTimeoutId);
+            }
+        }
+        
+        isRenderingInProgress = true;
+        currentRenderQuality = 0;  // Start with lowest quality
+        
+        // Create function for each step of progressive rendering
+        function renderNextStep() {
+            // If we're no longer in rendering process, exit
+            if (!isRenderingInProgress) return;
+            
+            const scale = lowQualityMode ? progressiveScale[0] : progressiveScale[currentRenderQuality];
+            const startTime = performance.now();
+            
+            drawFractalWithScale(scale);
+            
+            lastRenderTime = performance.now() - startTime;
+            
+            // Continue to next quality step if user is not interacting
+            currentRenderQuality++;
+            if (currentRenderQuality < progressiveScale.length && !lowQualityMode) {
+                renderingTimeoutId = setTimeout(renderNextStep, 10);
+            } else {
+                isRenderingInProgress = false;
+            }
+        }
+        
+        // Start the first rendering step
+        renderNextStep();
+    }
+
+    //-----------------------------------------------------------------
+    // NEW FUNCTION: Rendering with given scale (1 = full quality)
+    //-----------------------------------------------------------------
+    function drawFractalWithScale(scale) {
+        // Call existing functions for special fractals
         switch (fractalType) {
             case 'sierpinski':
                 drawSierpinski();
@@ -283,16 +738,17 @@
                 drawFractalTree();
                 return;
             case 'mandelbulb':
-                drawMandelbulb();
+                drawMandelbulb(scale);
                 return;
         }
 
         let data = imageData.data;
         let colorPeriod = 30;
 
-        for (let py = 0; py < height; py++) {
+        // We render only every N-th pixel depending on scale
+        for (let py = 0; py < height; py += scale) {
             let y0 = ymin + (py / height) * (ymax - ymin);
-            for (let px = 0; px < width; px++) {
+            for (let px = 0; px < width; px += scale) {
                 let x0 = xmin + (px / width) * (xmax - xmin);
 
                 let x, y;
@@ -311,29 +767,31 @@
                     y = 0;
                 }
 
+                // Loop optimization - avoiding object allocations
+                let xTemp, powerResult;
                 while (x * x + y * y <= 4 && iteration < maxIter) {
                     switch (fractalType) {
                         case 'mandelbrot':
                         case 'julia': {
-                            let xTemp = x * x - y * y + xC;
+                            xTemp = x * x - y * y + xC;
                             y = 2 * x * y + yC;
                             x = xTemp;
                             break;
                         }
                         case 'burningship': {
-                            let xTempBS = x * x - y * y + xC;
+                            xTemp = x * x - y * y + xC;
                             y = 2 * Math.abs(x * y) + yC;
-                            x = Math.abs(xTempBS);
+                            x = Math.abs(xTemp);
                             break;
                         }
                         case 'tricorn': {
-                            let xTempT = x * x - y * y + xC;
+                            xTemp = x * x - y * y + xC;
                             y = -2 * x * y + yC;
-                            x = xTempT;
+                            x = xTemp;
                             break;
                         }
                         case 'multibrot': {
-                            let powerResult = complexPower(x, y, multibrotPower);
+                            powerResult = complexPower(x, y, multibrotPower);
                             x = powerResult.x + xC;
                             y = powerResult.y + yC;
                             break;
@@ -350,20 +808,32 @@
                     color = colorMap(t);
                 }
 
-                let index = (py * width + px) * 4;
-                data[index + 0] = color[0];
-                data[index + 1] = color[1];
-                data[index + 2] = color[2];
-                data[index + 3] = 255;
+                // Fill a block of pixels of given size (according to scale)
+                for (let blockY = 0; blockY < scale && py + blockY < height; blockY++) {
+                    for (let blockX = 0; blockX < scale && px + blockX < width; blockX++) {
+                        let index = ((py + blockY) * width + (px + blockX)) * 4;
+                        data[index + 0] = color[0];
+                        data[index + 1] = color[1];
+                        data[index + 2] = color[2];
+                        data[index + 3] = 255;
+                    }
+                }
             }
         }
         ctx.putImageData(imageData, 0, 0);
     }
 
     //-----------------------------------------------------------------
-    // Mandelbulb (3D, CPU)
+    // Updated drawFractal() - now uses progressive rendering
     //-----------------------------------------------------------------
-    function drawMandelbulb() {
+    function drawFractal() {
+        progressivelyDrawFractal();
+    }
+
+    //-----------------------------------------------------------------
+    // Optimized 3D Mandelbulb
+    //-----------------------------------------------------------------
+    function drawMandelbulb(scale = 1) {
         let data = imageData.data;
         let lightDirection = { x: -1, y: -1, z: -1 };
         let normalize = (v) => {
@@ -376,9 +846,9 @@
         let epsilon = 0.001;
         let colorPeriod = 30;
 
-        for (let py = 0; py < height; py++) {
+        for (let py = 0; py < height; py += scale) {
             let y0 = ymin + (py / height) * (ymax - ymin);
-            for (let px = 0; px < width; px++) {
+            for (let px = 0; px < width; px += scale) {
                 let x0 = xmin + (px / width) * (xmax - xmin);
 
                 let rayDir = normalize({ x: x0, y: y0, z: -1 });
@@ -411,11 +881,16 @@
                     color = [0, 0, 0]; 
                 }
 
-                let index = (py * width + px) * 4;
-                data[index + 0] = color[0];
-                data[index + 1] = color[1];
-                data[index + 2] = color[2];
-                data[index + 3] = 255;
+                // Fill a block of pixels of given size (according to scale)
+                for (let blockY = 0; blockY < scale && py + blockY < height; blockY++) {
+                    for (let blockX = 0; blockX < scale && px + blockX < width; blockX++) {
+                        let index = ((py + blockY) * width + (px + blockX)) * 4;
+                        data[index + 0] = color[0];
+                        data[index + 1] = color[1];
+                        data[index + 2] = color[2];
+                        data[index + 3] = 255;
+                    }
+                }
             }
         }
         ctx.putImageData(imageData, 0, 0);
@@ -624,22 +1099,118 @@
     //-----------------------------------------------------------------
     // Initialization
     //-----------------------------------------------------------------
+    function initialize(){
+        // Add information about progressive rendering
+        const infoLink = document.getElementById('infoLink');
+        const renderingInfo = document.createElement('p');
+        renderingInfo.textContent = 'Progressive rendering activated';
+        renderingInfo.style.fontSize = '12px';
+        renderingInfo.style.opacity = '0.8';
+        renderingInfo.style.marginTop = '5px';
+        infoLink.appendChild(renderingInfo);
+        
+        // Initialize for mobile devices
+        initMobileView();
+        
+        // Setup event listeners
+        setupEventListeners();
+    }
+    
+    // Setup collapsible sections for mobile UI
+    function setupMobileCollapsibleSections() {
+        const mobileHeaders = document.querySelectorAll('.mobile-section-header');
+        
+        mobileHeaders.forEach(header => {
+            // By default, only keep first section expanded
+            const section = header.parentElement;
+            const content = header.nextElementSibling;
+            
+            // Initially collapse all sections except the first one
+            if (section === document.querySelector('.mobile-section')) {
+                section.classList.add('mobile-section-expanded');
+                content.style.maxHeight = content.scrollHeight + 'px';
+            }
+            
+            header.addEventListener('click', () => {
+                section.classList.toggle('mobile-section-expanded');
+                
+                if (section.classList.contains('mobile-section-expanded')) {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                } else {
+                    content.style.maxHeight = '0';
+                }
+            });
+        });
+    }
+    
+    // Initialize for mobile devices
+    function initMobileView() {
+        if (isMobileDevice()) {
+            toggleControlsBtn.style.display = 'flex';
+            
+            // Initially hide panel for better fractal viewing, user can open with button
+            if (window.innerWidth <= 576) {
+                controlsPanel.style.display = 'none';
+                // Ensure the fractal is rendered at startup
+                setTimeout(() => {
+                    progressivelyDrawFractal();
+                }, 100);
+                
+                // Setup collapsible sections for mobile
+                setupMobileCollapsibleSections();
+            }
+        }
+    }
+
+    // Setup all event listeners
+    function setupEventListeners() {
+        // Control panel toggle for mobile
+        toggleControlsBtn.addEventListener('click', function() {
+            if (controlsPanel.style.display === 'none') {
+                controlsPanel.style.display = 'block';
+            } else {
+                controlsPanel.style.display = 'none';
+                // Render fractal after closing the control panel
+                setTimeout(() => {
+                    progressivelyDrawFractal();
+                }, 100);
+            }
+        });
+        
+        // Reset view button
+        document.getElementById('resetViewBtn').addEventListener('click', function() {
+            resetFractal();
+            progressivelyDrawFractal();
+        });
+    }
+
     resetFractal();
     drawFractal();
+    initialize();
 
     //-----------------------------------------------------------------
-    // Recursion depth (Tree, Koch)
+    // UPDATED controls for better performance
     //-----------------------------------------------------------------
+
+    // Recursion depth (Tree, Koch)
     const recursionDepthRange = document.getElementById('recursionDepthRange');
     recursionDepthRange.addEventListener('input', function(){
         recursionDepth = parseInt(this.value);
         depthDisplay.textContent=recursionDepth;
-        drawFractal();
+        
+        // For recursive fractals we respond immediately
+        if(['koch', 'tree'].includes(fractalType)) {
+            drawFractal();
+        }
+    });
+    
+    recursionDepthRange.addEventListener('change', function() {
+        if(!['koch', 'tree'].includes(fractalType)) {
+            drawFractal();
+        }
     });
 
-    //-----------------------------------------------------------------
     // Fractal select
-    //-----------------------------------------------------------------
     document.getElementById('fractalSelect').addEventListener('change',function(){
         fractalType=this.value;
         document.getElementById('juliaControls').style.display =
@@ -649,12 +1220,10 @@
         document.getElementById('depthControls').style.display =
            ['koch','tree'].includes(fractalType)? 'block':'none';
         resetFractal();
-        drawFractal();
+        progressivelyDrawFractal();
     });
 
-    //-----------------------------------------------------------------
-    // Julia parameter changes
-    //-----------------------------------------------------------------
+    // Julia parameter changes - updated with delay
     const juliaParameterSelect = document.getElementById('juliaParameterSelect');
     const customJuliaDiv = document.getElementById('customJulia');
     const applyCustomJuliaButton = document.getElementById('applyCustomJulia');
@@ -680,30 +1249,43 @@
         }
     });
 
-    //-----------------------------------------------------------------
-    // Multibrot exponent
-    //-----------------------------------------------------------------
-    document.getElementById('multibrotPower').addEventListener('input', function(){
-        multibrotPower=parseInt(this.value);
-        drawFractal();
+    // Multibrot exponent - added delay
+    const multibrotPowerInput = document.getElementById('multibrotPower');
+    let multibrotDebounceTimeout;
+    
+    multibrotPowerInput.addEventListener('input', function(){
+        clearTimeout(multibrotDebounceTimeout);
+        multibrotPowerInput.addEventListener('change', function() {
+            multibrotPower = parseInt(this.value);
+            drawFractal();
+        });
     });
 
-    //-----------------------------------------------------------------
-    // Color scheme changes
-    //-----------------------------------------------------------------
-    const colorSchemeSelect=document.getElementById('colorSchemeSelect');
+    // Color scheme changes - added event handler for better performance
+    const colorSchemeSelect = document.getElementById('colorSchemeSelect');
     colorSchemeSelect.addEventListener('change', function(){
-        colorScheme=this.value;
+        colorScheme = this.value;
         document.getElementById('customColors').style.display =
            (colorScheme==='custom')? 'block':'none';
         drawFractal();
     });
 
-    // Update custom colors on input
+    // Update custom colors on input - added debounce
     for(let i=1; i<=6; i++){
-        document.getElementById('color'+i).addEventListener('input', function(){
-            customColors[i-1]=hexToRgb(this.value);
-            drawFractal();
+        const colorPicker = document.getElementById('color'+i);
+        let colorDebounceTimeout;
+        
+        colorPicker.addEventListener('input', function(){
+            // Immediate color change in memory
+            customColors[i-1] = hexToRgb(this.value);
+            
+            // Delayed rendering
+            clearTimeout(colorDebounceTimeout);
+            colorDebounceTimeout = setTimeout(() => {
+                if(colorScheme === 'custom') {
+                    drawFractal();
+                }
+            }, 200);
         });
     }
     function hexToRgb(hex){
@@ -718,37 +1300,52 @@
     document.getElementById('randomizeColorsBtn').addEventListener('click', ()=>{
         for(let i=1; i<=6; i++){
             const randCol = getRandomHexColor();
-            // prepíšeme input value
+            // update input value
             document.getElementById('color'+i).value=randCol;
-            // aktualizujeme v JS poli
+            // update in JS array
             customColors[i-1]=hexToRgb(randCol);
         }
-        drawFractal();
+        if(colorScheme === 'custom') {
+            drawFractal();
+        }
     });
     function getRandomHexColor(){
-        // vygenerujeme náhodné R,G,B v rozsahu 0..255
+        // generate random R,G,B in range 0..255
         const r = Math.floor(Math.random()*256).toString(16).padStart(2,'0');
         const g = Math.floor(Math.random()*256).toString(16).padStart(2,'0');
         const b = Math.floor(Math.random()*256).toString(16).padStart(2,'0');
         return '#'+r+g+b; 
     }
 
-    //-----------------------------------------------------------------
-    // Max iteration range
-    //-----------------------------------------------------------------
-    const maxIterRange=document.getElementById('maxIterRange');
+    // Max iteration range - added debounce
+    const maxIterRange = document.getElementById('maxIterRange');
+    let iterDebounceTimeout;
+    
     maxIterRange.addEventListener('input', function(){
-        maxIter=parseInt(this.value);
-        iterationDisplay.textContent=maxIter;
+        maxIter = parseInt(this.value);
+        iterationDisplay.textContent = maxIter;
+        
+        // Delayed rendering when moving the slider
+        clearTimeout(iterDebounceTimeout);
+        iterDebounceTimeout = setTimeout(() => {
+            drawFractal();
+        }, 200);
+    });
+    
+    maxIterRange.addEventListener('change', function() {
+        clearTimeout(iterDebounceTimeout);
         drawFractal();
     });
 
     //-----------------------------------------------------------------
-    // Mouse wheel zoom
+    // Mouse wheel zoom - optimized
     //-----------------------------------------------------------------
     canvas.addEventListener('wheel', function(event){
         event.preventDefault();
         if(['sierpinski','koch','barnsley','tree'].includes(fractalType)) return;
+
+        isUserInteracting = true;
+        lowQualityMode = true;
 
         let zoom = (event.deltaY<0)? 0.9: 1.1;
         let rect=canvas.getBoundingClientRect();
@@ -762,22 +1359,38 @@
         xmax= x + (xmax-x)*zoom;
 
         let aspectRatio= height/width;
-        let xRange=xmax-xmin;
         let yCenter=y;
-        ymin= yCenter-(xRange*aspectRatio)/2;
-        ymax= yCenter+(xRange*aspectRatio)/2;
+        ymin= yCenter-(xmax-xmin)*aspectRatio/2;
+        ymax= yCenter+(xmax-xmin)*aspectRatio/2;
 
-        drawFractal();
+        // Cancel previous timer if it exists
+        if (renderingTimeoutId) {
+            clearTimeout(renderingTimeoutId);
+        }
+        
+        // Render with low resolution immediately
+        drawFractalWithScale(progressiveScale[0]);
+        
+        // Schedule full quality rendering after scrolling ends
+        clearTimeout(renderingTimeoutId);
+        renderingTimeoutId = setTimeout(() => {
+            isUserInteracting = false;
+            lowQualityMode = false;
+            // Start new rendering at full quality
+            progressivelyDrawFractal();
+        }, 300);
     });
 
     //-----------------------------------------------------------------
-    // Mouse drag panning
+    // Mouse drag panning - optimized
     //-----------------------------------------------------------------
     let isDragging=false;
     let startX, startY;
     canvas.addEventListener('mousedown', function(event){
         if(['sierpinski','koch','barnsley','tree'].includes(fractalType)) return;
         isDragging=true;
+        isUserInteracting = true;
+        lowQualityMode = true;
         startX= event.clientX;
         startY= event.clientY;
     });
@@ -795,11 +1408,33 @@
 
             startX= event.clientX;
             startY= event.clientY;
-            drawFractal();
+
+            // Render with low resolution during dragging
+            drawFractalWithScale(progressiveScale[0]);
         }
     });
-    canvas.addEventListener('mouseup', ()=>{ isDragging=false; });
-    canvas.addEventListener('mouseleave', ()=>{ isDragging=false; });
+    canvas.addEventListener('mouseup', function() { 
+        isDragging = false;
+        
+        // After releasing the mouse, wait briefly then render at full quality
+        setTimeout(() => {
+            isUserInteracting = false;
+            lowQualityMode = false;
+            progressivelyDrawFractal();
+        }, 200);
+    });
+    canvas.addEventListener('mouseleave', function() { 
+        if (isDragging) {
+            isDragging = false;
+            
+            // After leaving the canvas wait and render at full quality
+            setTimeout(() => {
+                isUserInteracting = false;
+                lowQualityMode = false;
+                progressivelyDrawFractal();
+            }, 200);
+        }
+    });
 
     //-----------------------------------------------------------------
     // Fullscreen on F11
@@ -825,6 +1460,117 @@
         resetFractal();
         drawFractal();
     });
+
+    //-----------------------------------------------------------------
+    // Touch support for mobile devices
+    //-----------------------------------------------------------------
+    
+    // Pinch-to-zoom on touch devices
+    let initialPinchDistance = 0;
+    
+    canvas.addEventListener('touchstart', function(event) {
+        if (event.touches.length === 2) {
+            // Record initial distance between two fingers for pinch zoom
+            initialPinchDistance = Math.hypot(
+                event.touches[0].clientX - event.touches[1].clientX,
+                event.touches[0].clientY - event.touches[1].clientY
+            );
+        } else if (event.touches.length === 1) {
+            // Single-finger dragging (similar to mousedown)
+            isDragging = true;
+            isUserInteracting = true;
+            lowQualityMode = true;
+            startX = event.touches[0].clientX;
+            startY = event.touches[0].clientY;
+        }
+    });
+    
+    canvas.addEventListener('touchmove', function(event) {
+        event.preventDefault(); // Prevent page scrolling
+        
+        if (event.touches.length === 2) {
+            // Two-finger pinch zoom
+            const currentDistance = Math.hypot(
+                event.touches[0].clientX - event.touches[1].clientX,
+                event.touches[0].clientY - event.touches[1].clientY
+            );
+            
+            if (initialPinchDistance > 0) {
+                // Calculate zoom factor
+                const zoomFactor = currentDistance / initialPinchDistance;
+                
+                // Center between two fingers
+                const centerX = (event.touches[0].clientX + event.touches[1].clientX) / 2;
+                const centerY = (event.touches[0].clientY + event.touches[1].clientY) / 2;
+                
+                // Convert to fractal coordinates
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = centerX - rect.left;
+                const mouseY = centerY - rect.top;
+                
+                // Similar calculation as wheel zoom, but reversed (zoomFactor > 1 means zoom in)
+                const zoom = (zoomFactor > 1) ? 0.95 : 1.05;
+                
+                const x = xmin + (mouseX / width) * (xmax - xmin);
+                const y = ymin + (mouseY / height) * (ymax - ymin);
+                
+                xmin = x + (xmin - x) * zoom;
+                xmax = x + (xmax - x) * zoom;
+                
+                const aspectRatio = height / width;
+                const yCenter = y;
+                ymin = yCenter - (xmax - xmin) * aspectRatio / 2;
+                ymax = yCenter + (xmax - xmin) * aspectRatio / 2;
+                
+                // Update initial distance for next movement
+                initialPinchDistance = currentDistance;
+                
+                // Render with low quality during interaction
+                drawFractalWithScale(progressiveScale[0]);
+            }
+        } else if (event.touches.length === 1 && isDragging) {
+            // Single-finger dragging (panning view)
+            const dx = event.touches[0].clientX - startX;
+            const dy = event.touches[0].clientY - startY;
+            const xRange = xmax - xmin;
+            const yRange = ymax - ymin;
+            
+            xmin -= dx * xRange / width;
+            xmax -= dx * xRange / width;
+            ymin -= dy * yRange / height;
+            ymax -= dy * yRange / height;
+            
+            startX = event.touches[0].clientX;
+            startY = event.touches[0].clientY;
+            
+            // Render with low quality during dragging
+            drawFractalWithScale(progressiveScale[0]);
+        }
+    });
+    
+    canvas.addEventListener('touchend', function(event) {
+        if (event.touches.length < 2) {
+            initialPinchDistance = 0;
+        }
+        
+        if (event.touches.length === 0) {
+            isDragging = false;
+            
+            // After touch ends, wait and render in full quality
+            setTimeout(() => {
+                isUserInteracting = false;
+                lowQualityMode = false;
+                progressivelyDrawFractal();
+            }, 200);
+        }
+    });
+
+    // Mobile device detection
+    function isMobileDevice() {
+        return (window.innerWidth <= 768) || 
+               ('ontouchstart' in window) || 
+               (navigator.maxTouchPoints > 0);
+    }
 </script>
 </body>
 </html>
