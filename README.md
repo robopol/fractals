@@ -1,6 +1,7 @@
 # Fractal Explorer
 
 Fractal Explorer is a web application that allows interactive exploration of various fractals, including the Mandelbrot set, Julia set, Sierpiński triangle, Koch snowflake, Barnsley's fern, and fractal tree. The application provides a variety of controls to adjust fractal parameters, such as deep iterations, color schemes, and recursion depth.
+![Render fractals](assets/screencapture-fractals.png)
 
 ## Features
 
